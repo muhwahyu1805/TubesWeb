@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Kas Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <div id="auth-screen" class="active-screen">
+            <div class="auth-box" id="login-form-container">
+                <h2>Masuk</h2>
+                <p>Buku Kas Digital</p>
+                <form id="loginForm">
+                    <div class="input-group"><label>Email</label><input type="email" id="login-email" required placeholder="email@contoh.com"></div>
+                    <div class="input-group"><label>Password</label><input type="password" id="login-password" required placeholder="********"></div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <div class="auth-link">Belum punya akun? <span onclick="toggleAuth('register')">Daftar di sini</span></div>
+            </div>
+
+            <div class="auth-box" id="register-form-container" style="display:none;">
+                <h2>Daftar Akun</h2>
+                <p>Mulai catat keuanganmu</p>
+                <form id="registerForm">
+                    <div class="input-group"><label>Nama Lengkap</label><input type="text" id="reg-name" required placeholder="Nama Anda"></div>
+                    <div class="input-group"><label>Email</label><input type="email" id="reg-email" required placeholder="email@contoh.com"></div>
+                    <div class="input-group"><label>Password</label><input type="password" id="reg-password" required placeholder="Buat password"></div>
+                    <button type="submit" class="btn">Daftar Sekarang</button>
+                </form>
+                <div class="auth-link">Sudah punya akun? <span onclick="toggleAuth('login')">Masuk di sini</span></div>
+            </div>
+        </div>
+
+        <div id="app-screen">
+            <div class="header">
+                <h1>Halo, <span id="user-display">Pengguna</span>!</h1>
+                <button class="menu-btn" onclick="openSettings()" title="Pengaturan">⋮</button>
+            </div>
+            
+            <div class="dashboard">
+                <div class="card"><h3>Total Saldo</h3><div class="amount" id="total-balance">Rp 0</div></div>
+                <div class="card"><h3>Total Pemasukan</h3><div class="amount text-success" id="total-income">Rp 0</div></div>
+                <div class="card"><h3>Total Pengeluaran</h3><div class="amount text-danger" id="total-expense">Rp 0</div></div>
+            </div>
+            
+            <div class="main-content">
+                <div class="form-section">
+                    <h2>Menu Transaksi</h2>
+                    <div class="menu-transaksi-grid">
+                        <div class="menu-icon-btn btn-pemasukan" onclick="openTransactionModal('pemasukan')">
+                            <span class="icon">💰</span>
+                            <span>Pemasukan</span>
+                        </div>
+                        <div class="menu-icon-btn btn-pengeluaran" onclick="openTransactionModal('pengeluaran')">
+                            <span class="icon">💸</span>
+                            <span>Pengeluaran</span>
+                        </div>
+                        <div class="menu-icon-btn btn-cicilan" onclick="openTransactionModal('cicilan')">
+                            <span class="icon">🗓️</span>
+                            <span>Cicilan</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="list-section" style="margin-bottom: 20px;"><h2>Riwayat Transaksi</h2><div class="transaction-list" id="transaction-list"></div></div>
+                    <div class="list-section"><h2>Cicilan Aktif</h2><div class="transaction-list" id="installment-list"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-screen">
+            <div class="header">
+                <button onclick="closeSettings()" class="btn" style="width: auto; padding: 8px 15px; background: var(--text-light);">← Kembali</button>
+                <h1 style="font-size: 20px;">Pengaturan Akun</h1>
+            </div>
+            <div class="card" style="max-width: 500px; margin: 0 auto; padding: 30px;">
+                <h2 style="color: var(--primary); margin-bottom: 20px; font-size: 18px;">Profil & Password</h2>
+                <div class="input-group"><label>Email</label><input type="text" id="settings-email" disabled></div>
+                <div class="input-group"><label>Password Lama</label><input type="password" id="settings-old-password" placeholder="Masukkan password saat ini"></div>
+                <div class="input-group"><label>Password Baru</label><input type="password" id="settings-new-password" placeholder="Masukkan password baru"></div>
+                <button class="btn" onclick="updatePassword()" style="margin-bottom: 25px;">Simpan Password Baru</button>
+                <h2 style="color: var(--text); margin-bottom: 15px; font-size: 18px;">Tindakan Akun</h2>
+                <button class="btn btn-warning" onclick="logout(event)">Keluar</button>
+                <button class="btn btn-danger" onclick="promptDeleteAccount(event)">Hapus Akun Permanen</button>
+            </div>
+        </div>
+
+        <div id="transaction-modal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <span class="close-btn" onclick="closeTransactionModal()">&times;</span>
+                <h2 id="modal-title" style="color: var(--primary); margin-bottom: 15px; font-size: 20px;">Tambah Transaksi</h2>
+                
+                <form id="transactionForm">
+                    <input type="hidden" id="tx-type" value="pemasukan">
+                    <input type="checkbox" id="is-cicilan" style="display: none;">
+
+                    <div class="input-group" id="cicilan-duration-group" style="display: none;">
+                        <label>Lama Cicilan (Bulan)</label>
+                        <input type="number" id="tx-tenor" min="2" placeholder="Contoh: 12">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Kategori</label>
+                        <select id="tx-category" required></select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Keterangan</label>
+                        <input type="text" id="tx-desc" required placeholder="Contoh: Beli makan siang">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label id="label-amount">Jumlah (Rp)</label>
+                        <input type="text" id="tx-amount" required placeholder="50.000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Tanggal Mulai / Transaksi</label>
+                        <input type="date" id="tx-date" required>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="btn-submit">Simpan Transaksi</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="delete-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeDeleteModal()">&times;</span>
+                <h2>Konfirmasi Hapus</h2>
+                <input type="password" id="delete-confirm-password" placeholder="Masukkan password Anda">
+                <button class="btn btn-danger" onclick="confirmDeleteAccount()">Hapus Permanen</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast">Notifikasi</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
